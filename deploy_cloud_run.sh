@@ -7,7 +7,7 @@ GCP_PROJECT_ID="pyze-automation-dev3"
 GCP_REGION="us-east1"
 SERVICE_NAME="business-rules-demo"
 IMAGE_NAME="business-rules-demo"
-GEMINI_API_KEY_VALUE="YOUR_GEMINI_API_KEY"
+GEMINI_API_KEY_VALUE="AIzaSyCN5vq3xQCjAqxZPTfADZIEwecBycAkSzM"
 
 # --- Derived Variables ---
 ARTIFACT_REGISTRY_REPO="${SERVICE_NAME}-repo" # Name for the Artifact Registry repository
