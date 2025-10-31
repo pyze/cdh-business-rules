@@ -16,5 +16,5 @@ images:
 # Define substitution variables that can be passed in via gcloud builds submit
 # Default values can be provided here if needed, but we'll pass them from deploy_cloud_run.sh
 substitutions:
-  _IMAGE_TAG: 'us-east1-docker.pkg.dev/pyze-automation-dev3/cibc-business-rules-demo-repo/cibc-business-rules-demo:latest' # Default, will be overridden
+  _IMAGE_TAG: 'us-east1-docker.pkg.dev/pyze-automation-dev3/business-rules-demo-repo/business-rules-demo:latest' # Default, will be overridden
   _GEMINI_API_KEY: 'dummy-key' # Default, will be overridden

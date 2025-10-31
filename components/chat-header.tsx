@@ -14,7 +14,7 @@ export function ChatHeader({ brandName, logoUrl, tagline, children }: ChatHeader
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
           {logoUrl ? (
-            <img src={logoUrl || "/placeholder.svg"} alt="CIBC Logo" className="h-8 w-auto object-contain" />
+            <img src={logoUrl || "/placeholder.svg"} alt="Company Logo" className="h-8 w-auto object-contain" />
           ) : (
             <MessageSquare className="w-6 h-6 text-brand" />
           )}

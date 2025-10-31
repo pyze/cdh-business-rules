@@ -53,7 +53,7 @@ const config: Config = {
           foreground: "hsl(var(--card-foreground))",
         },
         brand: {
-          DEFAULT: "#c41f3e", // CIBC red
+          DEFAULT: "#c41f3e", // Brand red
           light: "#e63e5c",
           dark: "#a01932",
           foreground: "#ffffff",

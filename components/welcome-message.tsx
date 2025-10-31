@@ -13,7 +13,7 @@ export function WelcomeMessage({ brandName, welcomeMessage, tagline, logoUrl }: 
   return (
     <div className="flex flex-col items-center justify-center text-center p-8 space-y-4">
       {logoUrl ? (
-        <img src={logoUrl || "/placeholder.svg"} alt="CIBC Logo" className="h-12 w-auto object-contain mb-2" />
+        <img src={logoUrl || "/placeholder.svg"} alt="Company Logo" className="h-12 w-auto object-contain mb-2" />
       ) : (
         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand/10">
           <Bot className="h-8 w-8 text-brand" />

@@ -5,8 +5,8 @@
 # --- Configuration ---
 GCP_PROJECT_ID="pyze-automation-dev3"
 GCP_REGION="us-east1"
-SERVICE_NAME="cibc-business-rules-demo"
-IMAGE_NAME="cibc-business-rules-demo"
+SERVICE_NAME="business-rules-demo"
+IMAGE_NAME="business-rules-demo"
 GEMINI_API_KEY_VALUE="YOUR_GEMINI_API_KEY"
 
 # --- Derived Variables ---
