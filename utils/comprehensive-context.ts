@@ -4,13 +4,13 @@ export const comprehensiveContext = `
 
 ## 1. Document Purpose
 
-This document provides a structured, machine-usable representation of strategy metadata to enable real-time interaction, exploration, and analysis of the NBA_AllIssues_AllGroups_Account strategy and related nodes. It is designed to allow agents (e.g., ChatGPT) to respond to governance, performance, optimization, and simulation questions.
+This document provides a structured, machine-usable representation of strategy metadata to enable real-time interaction, exploration, and analysis of the Primary_Decision_Strategy and related nodes. It is designed to allow agents (e.g., ChatGPT) to respond to governance, performance, optimization, and simulation questions.
 
 ---
 
 ## 2. Strategy Overview
 
-- **Strategy Name:** NBA_AllIssues_AllGroups_Account
+- **Strategy Name:** Primary_Decision_Strategy
 - **Strategy Purpose:** Evaluate customer eligibility, applicability, suitability, and offer prioritization for targeted offers.
 - **Primary Data Sources:** Customer Metadata, Decision Results, Interaction History, Prediction Engine
 - **Key External Integrations:** Publishing System (for final offers), Prediction Engine (for eligibility/suitability evaluation)
@@ -23,12 +23,12 @@ This document provides a structured, machine-usable representation of strategy m
 |------------------------------|----------------------------|-------------------------------------------------|--------------------------------------------------|--------------------------|-------------------------|-------------------------------|--------------------------|
 | External Input               | Input                      | None                                            | Customer Input                                  | None                     | N/A                     | N/A                           | N/A                    |
 | Applicability Check          | Applicability Check        | Customer.Region = 'NorthAmerica'                | Customer Metadata                               | None                     | pzExecuteLegacyComponent| SSA Caching via pzGetGOS      | ComponentExecutionException |
-| NBA_AllIssues_E_Account      | Eligibility Check          | Customer.Eligible = true                        | Customer Metadata, Decision Results             | None                     | pzExecuteLegacyComponent| SSA Caching via pzGetGOS      | ComponentExecutionException |
-| NBA_AllGroups_A_Account      | Applicability Check        | Customer.Group = 'Premium'                      | Customer Metadata, Decision Results             | None                     | pzCreatePredictionMarkers| SSA Caching via pzGetGOS     | ComponentExecutionException |
+| Eligibility_Check_Primary    | Eligibility Check          | Customer.Eligible = true                        | Customer Metadata, Decision Results             | None                     | pzExecuteLegacyComponent| SSA Caching via pzGetGOS      | ComponentExecutionException |
+| Applicability_Check_Primary  | Applicability Check        | Customer.Group = 'Premium'                      | Customer Metadata, Decision Results             | None                     | pzCreatePredictionMarkers| SSA Caching via pzGetGOS     | ComponentExecutionException |
 | Suitability Check            | Suitability                | Customer.Age > 25 and Account.Balance > 1000     | Customer Metadata, Decision Results             | None                     | pzCreatePredictionMarkers| SSA Caching via pzGetGOS     | ComponentExecutionException |
-| NBA_AllGroups_S_Account      | Suitability Extension      | CreditScore > 60                                | Customer Metadata, Decision Results             | None                     | pzCreatePredictionMarkers| SSA Caching via pzGetGOS     | ComponentExecutionException |
+| Suitability_Check_Primary    | Suitability Extension      | CreditScore > 60                                | Customer Metadata, Decision Results             | None                     | pzCreatePredictionMarkers| SSA Caching via pzGetGOS     | ComponentExecutionException |
 | Offer Collector              | Offer Evaluation           | Segment = 'HighValue' and Propensity > 0.7       | Customer Metadata, Decision History, Prediction Engine | None                     | pzCreatePredictionMarkers| SSA Caching via pzGetGOS     | ComponentExecutionException |
-| AllGroupsExtension           | Eligibility Reconfirmation | Region = 'NorthAmerica'                         | Customer Metadata, Decision Results             | None                     | pzCreatePredictionMarkers| SSA Caching via pzGetGOS     | ComponentExecutionException |
+| Eligibility_Extension        | Eligibility Reconfirmation | Region = 'Region Central'                       | Customer Metadata, Decision Results             | None                     | pzCreatePredictionMarkers| SSA Caching via pzGetGOS     | ComponentExecutionException |
 | Best Result                  | Final Offer Selection      | PrioritizationScore > 90 and Propensity > 0.8    | Customer Metadata, Decision Results             | None                     | pzCreatePredictionMarkers| SSA Caching via pzGetGOS     | ComponentExecutionException |
 | Results                      | Output                     | None                                            | Finalized Offer                                 | Publishing System        | pega_decisionengine_publishing.publishStrategyResults | SSA Caching via pzGetGOS | N/A |
 
@@ -36,9 +36,9 @@ This document provides a structured, machine-usable representation of strategy m
 
 ## 4. Key Relationships
 
-- **Eligibility Checks:** NBA_AllIssues_E_Account → AllGroupsExtension
-- **Applicability Checks:** Applicability Check → NBA_AllGroups_A_Account
-- **Suitability Checks:** Suitability Check → NBA_AllGroups_S_Account
+- **Eligibility Checks:** Eligibility_Check_Primary → Eligibility_Extension
+- **Applicability Checks:** Applicability Check → Applicability_Check_Primary
+- **Suitability Checks:** Suitability Check → Suitability_Check_Primary
 - **Offer Evaluation:** Offer Collector → Best Result
 - **Final Offer Selection:** Best Result → Results
 

@@ -183,7 +183,7 @@ export function formatUIContextForPrompt(uiContext: UIContext, userQuery: string
         contextPrompt += `Offer Collector | ${metrics.offer_collector_exec_time} | ${metrics.offer_collector_exceptions} | ${metrics.offer_collector_cache_hit}\n`
       }
       if (metrics.nba_allissues_exec_time) {
-        contextPrompt += `NBA_AllIssues_E_Account | ${metrics.nba_allissues_exec_time} | ${metrics.nba_allissues_exceptions} | ${metrics.nba_allissues_cache_hit}\n`
+        contextPrompt += `Eligibility_Check_Primary | ${metrics.nba_allissues_exec_time} | ${metrics.nba_allissues_exceptions} | ${metrics.nba_allissues_cache_hit}\n`
       }
       if (metrics.suitability_check_exec_time) {
         contextPrompt += `Suitability Check | ${metrics.suitability_check_exec_time} | ${metrics.suitability_check_exceptions} | ${metrics.suitability_check_cache_hit}\n`
@@ -192,7 +192,7 @@ export function formatUIContextForPrompt(uiContext: UIContext, userQuery: string
         contextPrompt += `Best Result | ${metrics.best_result_exec_time} | ${metrics.best_result_exceptions} | ${metrics.best_result_cache_hit}\n`
       }
       if (metrics.nba_allgroups_exec_time) {
-        contextPrompt += `NBA_AllGroups_A_Account | ${metrics.nba_allgroups_exec_time} | ${metrics.nba_allgroups_exceptions} | ${metrics.nba_allgroups_cache_hit}\n`
+        contextPrompt += `Applicability_Check_Primary | ${metrics.nba_allgroups_exec_time} | ${metrics.nba_allgroups_exceptions} | ${metrics.nba_allgroups_cache_hit}\n`
       }
     }
     

@@ -3,20 +3,20 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 
 // Mock data for detailed metrics
 const nodePerformanceData = [
-  { node: "NBA_AllIssues_E_Account", execTime: 320, exceptions: 842, cacheHitRate: "62%" },
+  { node: "Eligibility_Check_Primary", execTime: 320, exceptions: 842, cacheHitRate: "62%" },
   { node: "Offer Collector", execTime: 350, exceptions: 1205, cacheHitRate: "58%" },
   { node: "Suitability Check", execTime: 280, exceptions: 624, cacheHitRate: "71%" },
-  { node: "NBA_AllGroups_A_Account", execTime: 210, exceptions: 412, cacheHitRate: "75%" },
+  { node: "Applicability_Check_Primary", execTime: 210, exceptions: 412, cacheHitRate: "75%" },
   { node: "Best Result", execTime: 230, exceptions: 641, cacheHitRate: "64%" },
 ]
 
-// Update the offerAcceptanceData array to use Canadian regions
+// Offer acceptance data by region
 const offerAcceptanceData = [
-  { segment: "Premium", region: "Central", offers: 245000, acceptanceRate: "38%" },
-  { segment: "Premium", region: "West Coast", offers: 124000, acceptanceRate: "32%" },
-  { segment: "Standard", region: "Atlantic", offers: 186000, acceptanceRate: "27%" },
-  { segment: "Standard", region: "Prairie Provinces", offers: 105000, acceptanceRate: "24%" },
-  { segment: "Premium", region: "North", offers: 65000, acceptanceRate: "22%" },
+  { segment: "Premium", region: "Region Central", offers: 245000, acceptanceRate: "38%" },
+  { segment: "Premium", region: "Region West", offers: 124000, acceptanceRate: "32%" },
+  { segment: "Standard", region: "Region East", offers: 186000, acceptanceRate: "27%" },
+  { segment: "Standard", region: "Region Midwest", offers: 105000, acceptanceRate: "24%" },
+  { segment: "Premium", region: "Region North", offers: 65000, acceptanceRate: "22%" },
 ]
 
 interface DetailedMetricsProps {

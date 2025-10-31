@@ -55,7 +55,7 @@ interface WhatIfSimulatorProps {
 export default function WhatIfSimulator({ onSimulationComplete }: WhatIfSimulatorProps) {
   const [customerProfile, setCustomerProfile] = useState<CustomerProfile>({
     segment: 'HighValue',
-    region: 'Central',
+    region: 'Region Central',
     age: 35,
     creditScore: 75,
     propensity: 0.8,
@@ -69,7 +69,7 @@ export default function WhatIfSimulator({ onSimulationComplete }: WhatIfSimulato
   const simulation_attributes = ['Segment', 'Region', 'CreditScore', 'Propensity']
 
   const segments = ['HighValue', 'Premium', 'Standard', 'Basic']
-  const regions = ['Atlantic', 'Central', 'Prairie Provinces', 'West Coast', 'North']
+  const regions = ['Region East', 'Region Central', 'Region Midwest', 'Region West', 'Region North']
 
   const runSimulation = () => {
     setIsSimulating(true)
@@ -115,11 +115,11 @@ export default function WhatIfSimulator({ onSimulationComplete }: WhatIfSimulato
       const condition = node.condition_rule
 
       // Evaluate conditions based on customer profile
-      if (condition.includes("Region = 'Central'")) {
-        passed = profile.region === 'Central'
+      if (condition.includes("Region = 'Region Central'")) {
+        passed = profile.region === 'Region Central'
         actualValue = profile.region
-        requiredValue = 'Central'
-        if (!passed) reason = `Customer region '${profile.region}' does not match required 'Central'`
+        requiredValue = 'Region Central'
+        if (!passed) reason = `Customer region '${profile.region}' does not match required 'Region Central'`
       } else if (condition.includes('Customer.Eligible = true')) {
         passed = true // Assume eligible for simulation
         actualValue = true
@@ -194,8 +194,8 @@ export default function WhatIfSimulator({ onSimulationComplete }: WhatIfSimulato
     })
 
     // Determine final outcome
-    const criticalNodesPassed = nodesPassed.filter(node => 
-      ['NBA_AllIssues_E_Account', 'NBA_AllGroups_A_Account', 'Suitability Check', 'Best Result'].includes(node)
+    const criticalNodesPassed = nodesPassed.filter(node =>
+      ['Eligibility_Check_Primary', 'Applicability_Check_Primary', 'Suitability Check', 'Best Result'].includes(node)
     )
 
     let finalOutcome = 'No Offer'
@@ -203,9 +203,9 @@ export default function WhatIfSimulator({ onSimulationComplete }: WhatIfSimulato
 
     if (criticalNodesPassed.length >= 3) {
       finalOutcome = 'Offer Approved'
-      offerSelected = profile.segment === 'HighValue' ? 'Platinum Credit Card' : 
-                     profile.segment === 'Premium' ? 'Gold Credit Card' : 
-                     'Standard Credit Card'
+      offerSelected = profile.segment === 'HighValue' ? 'Premium Offer' :
+                     profile.segment === 'Premium' ? 'Standard Plus Offer' :
+                     'Basic Offer'
     } else if (criticalNodesPassed.length >= 2) {
       finalOutcome = 'Qualified with Conditions'
     } else {
@@ -226,7 +226,7 @@ export default function WhatIfSimulator({ onSimulationComplete }: WhatIfSimulato
   const resetSimulation = () => {
     setCustomerProfile({
       segment: 'HighValue',
-      region: 'Central',
+      region: 'Region Central',
       age: 35,
       creditScore: 75,
       propensity: 0.8,
@@ -468,12 +468,12 @@ export default function WhatIfSimulator({ onSimulationComplete }: WhatIfSimulato
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-3">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="h-auto p-4 flex flex-col items-start"
               onClick={() => setCustomerProfile({
                 segment: 'HighValue',
-                region: 'Central',
+                region: 'Region Central',
                 age: 45,
                 creditScore: 85,
                 propensity: 0.9,
@@ -486,12 +486,12 @@ export default function WhatIfSimulator({ onSimulationComplete }: WhatIfSimulato
               </div>
             </Button>
 
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="h-auto p-4 flex flex-col items-start"
               onClick={() => setCustomerProfile({
                 segment: 'Standard',
-                region: 'Atlantic',
+                region: 'Region East',
                 age: 28,
                 creditScore: 65,
                 propensity: 0.5,
@@ -504,12 +504,12 @@ export default function WhatIfSimulator({ onSimulationComplete }: WhatIfSimulato
               </div>
             </Button>
 
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="h-auto p-4 flex flex-col items-start"
               onClick={() => setCustomerProfile({
                 segment: 'Basic',
-                region: 'North',
+                region: 'Region North',
                 age: 22,
                 creditScore: 45,
                 propensity: 0.2,

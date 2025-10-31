@@ -81,13 +81,13 @@ interface SimulationResult {
 // Mock performance data - in real implementation, this would come from the runtime dashboard
 const mockPerformanceData: Record<string, FlowStageStats> = {
   'External Input': { passRate: 100, avgExecutionTime: 5, errorRate: 0, volume: 1000 },
-  'NBA_AllIssues_E_Account': { passRate: 85, avgExecutionTime: 45, errorRate: 2, volume: 1000 },
+  'Eligibility_Check_Primary': { passRate: 85, avgExecutionTime: 45, errorRate: 2, volume: 1000 },
   'Applicability Check': { passRate: 78, avgExecutionTime: 32, errorRate: 1, volume: 850 },
-  'NBA_AllGroups_A_Account': { passRate: 92, avgExecutionTime: 28, errorRate: 0.5, volume: 663 },
+  'Applicability_Check_Primary': { passRate: 92, avgExecutionTime: 28, errorRate: 0.5, volume: 663 },
   'Suitability Check': { passRate: 67, avgExecutionTime: 55, errorRate: 3, volume: 610 },
-  'NBA_AllGroups_S_Account': { passRate: 89, avgExecutionTime: 38, errorRate: 1, volume: 409 },
+  'Suitability_Check_Primary': { passRate: 89, avgExecutionTime: 38, errorRate: 1, volume: 409 },
   'Offer Collector': { passRate: 94, avgExecutionTime: 62, errorRate: 2, volume: 364 },
-  'AllGroupsExtension': { passRate: 96, avgExecutionTime: 25, errorRate: 0.5, volume: 342 },
+  'Eligibility_Extension': { passRate: 96, avgExecutionTime: 25, errorRate: 0.5, volume: 342 },
   'Best Result': { passRate: 88, avgExecutionTime: 48, errorRate: 1.5, volume: 328 },
   'Results': { passRate: 100, avgExecutionTime: 15, errorRate: 0, volume: 289 }
 }
@@ -105,7 +105,7 @@ export default function UnifiedRuleFlowExplorer({ onSimulationComplete }: Unifie
   const [isSimulating, setIsSimulating] = useState(false)
   const [customerProfile, setCustomerProfile] = useState<CustomerProfile>({
     segment: 'HighValue',
-    region: 'Central',
+    region: 'Region Central',
     age: 35,
     creditScore: 75,
     propensity: 0.8,
@@ -117,7 +117,7 @@ export default function UnifiedRuleFlowExplorer({ onSimulationComplete }: Unifie
 
   const { node_details, key_relationships } = strategyData
   const segments = ['HighValue', 'Premium', 'Standard', 'Basic']
-  const regions = ['Atlantic', 'Central', 'Prairie Provinces', 'West Coast', 'North']
+  const regions = ['Region East', 'Region Central', 'Region Midwest', 'Region West', 'Region North']
 
   // Helper function to format node names for better display
   const formatNodeName = (nodeName: string) => {
@@ -206,11 +206,11 @@ export default function UnifiedRuleFlowExplorer({ onSimulationComplete }: Unifie
       const condition = node.condition_rule
 
       // Evaluate conditions based on customer profile
-      if (condition.includes("Region = 'Central'")) {
-        passed = profile.region === 'Central'
+      if (condition.includes("Region = 'Region Central'")) {
+        passed = profile.region === 'Region Central'
         actualValue = profile.region
-        requiredValue = 'Central'
-        if (!passed) reason = `Customer region '${profile.region}' does not match required 'Central'`
+        requiredValue = 'Region Central'
+        if (!passed) reason = `Customer region '${profile.region}' does not match required 'Region Central'`
       } else if (condition.includes('Customer.Eligible = true')) {
         passed = true // Assume eligible for simulation
         actualValue = true
@@ -285,8 +285,8 @@ export default function UnifiedRuleFlowExplorer({ onSimulationComplete }: Unifie
     })
 
     // Determine final outcome
-    const criticalNodesPassed = nodesPassed.filter(node => 
-      ['NBA_AllIssues_E_Account', 'NBA_AllGroups_A_Account', 'Suitability Check', 'Best Result'].includes(node)
+    const criticalNodesPassed = nodesPassed.filter(node =>
+      ['Eligibility_Check_Primary', 'Applicability_Check_Primary', 'Suitability Check', 'Best Result'].includes(node)
     )
 
     let finalOutcome = 'No Offer'
@@ -294,9 +294,9 @@ export default function UnifiedRuleFlowExplorer({ onSimulationComplete }: Unifie
 
     if (criticalNodesPassed.length >= 3) {
       finalOutcome = 'Offer Approved'
-      offerSelected = profile.segment === 'HighValue' ? 'Platinum Credit Card' : 
-                     profile.segment === 'Premium' ? 'Gold Credit Card' : 
-                     'Standard Credit Card'
+      offerSelected = profile.segment === 'HighValue' ? 'Premium Offer' :
+                     profile.segment === 'Premium' ? 'Standard Plus Offer' :
+                     'Basic Offer'
     } else if (criticalNodesPassed.length >= 2) {
       finalOutcome = 'Qualified with Conditions'
     } else {

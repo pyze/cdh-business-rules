@@ -31,7 +31,7 @@ const generateNodeExecutionTimeData = () => {
 
     return {
       month,
-      NBA_AllIssues_E_Account: executionTime,
+      Eligibility_Check_Primary: executionTime,
       "Offer Collector": executionTime - 20 + (Math.random() * 40 - 20),
       "Suitability Check": executionTime - 40 + (Math.random() * 30 - 15),
       "Best Result": executionTime - 60 + (Math.random() * 20 - 10),
@@ -48,7 +48,7 @@ export function NodeExecutionChart() {
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 })
   const [isInitialized, setIsInitialized] = useState(false)
 
-  const nodeTypes = ["NBA_AllIssues_E_Account", "Offer Collector", "Suitability Check", "Best Result", "average"]
+  const nodeTypes = ["Eligibility_Check_Primary", "Offer Collector", "Suitability Check", "Best Result", "average"]
   const colors = ["#c41f3e", "#ff9800", "#2196f3", "#9c27b0", "#000000"]
   const maxValue = 350 // ms
 
@@ -193,7 +193,7 @@ export function NodeExecutionChart() {
 
     firstRowItems.forEach((nodeType, i) => {
       const x = legendX + i * firstRowItemWidth + 10
-      const displayName = nodeType === "NBA_AllIssues_E_Account" ? "NBA_AllIssues" : nodeType
+      const displayName = nodeType === "Eligibility_Check_Primary" ? "Eligibility Check" : nodeType
 
       // Draw line
       ctx.strokeStyle = colors[i]

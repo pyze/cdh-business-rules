@@ -1,15 +1,15 @@
 {
   "document_title": "Enabling Interactive Process Improvement for Strategy Evaluation",
-  "purpose": "Provide a structured, machine-usable representation of strategy metadata to enable real-time interaction, exploration, and analysis of the NBA_AllIssues_AllGroups_Account strategy and related nodes. It is designed to allow agents (e.g., ChatGPT) to respond to governance, performance, optimization, and simulation questions.",
+  "purpose": "Provide a structured, machine-usable representation of strategy metadata to enable real-time interaction, exploration, and analysis of the Primary_Decision_Strategy and related nodes. It is designed to allow agents (e.g., ChatGPT) to respond to governance, performance, optimization, and simulation questions.",
   "strategy_overview": {
-    "strategy_name": "NBA_AllIssues_AllGroups_Account",
+    "strategy_name": "Primary_Decision_Strategy",
     "strategy_purpose": "Evaluate customer eligibility, applicability, suitability, and offer prioritization for targeted offers.",
     "primary_data_sources": ["Customer Metadata", "Decision Results", "Interaction History", "Prediction Engine"],
     "key_external_integrations": ["Publishing System", "Prediction Engine"]
   },
   "data_models": {
     "Customer_Metadata": {
-      "source": "UBank-CDH-Data-Customer",
+      "source": "Enterprise-CDH-Data-Customer",
       "fields": {
         "Segment": "Customer value tier",
         "Region": "Customer's geographic region",
@@ -32,7 +32,7 @@
         "Accepted": "Whether the customer accepted the offer",
         "Channel": "Channel where the offer was made",
         "ResponseTime": "Time taken to respond",
-        "Region": "Canadian region metadata from the interaction"
+        "Region": "Geographic region metadata from the interaction"
       }
     }
   },
@@ -83,20 +83,20 @@
     "caching_approach": "SSA Caching via pzGetGOS",
     "randomization_elements": ["pzGetNextRandomDouble"],
     "runtime_exceptions": ["ComponentExecutionException"],
-    "simulation_capabilities": "Modify Segment, Region (Atlantic, Central, Prairie Provinces, West Coast, North), CreditScore, Propensity attributes to simulate node paths dynamically"
+    "simulation_capabilities": "Modify Segment, Region (Region East, Region Central, Region Midwest, Region West, Region North), CreditScore, Propensity attributes to simulate node paths dynamically"
   },
   "key_relationships": [
     {
       "type": "Eligibility Checks",
-      "path": "NBA_AllIssues_E_Account → AllGroupsExtension"
+      "path": "Eligibility_Check_Primary → Eligibility_Extension"
     },
     {
       "type": "Applicability Checks",
-      "path": "Applicability Check → NBA_AllGroups_A_Account"
+      "path": "Applicability Check → Applicability_Check_Primary"
     },
     {
       "type": "Suitability Checks",
-      "path": "Suitability Check → NBA_AllGroups_S_Account"
+      "path": "Suitability Check → Suitability_Check_Primary"
     },
     {
       "type": "Offer Evaluation",
@@ -121,7 +121,7 @@
     {
       "node_name": "Applicability Check",
       "node_type": "Applicability Check",
-      "condition_rule": "Customer.Region = 'Central'",
+      "condition_rule": "Customer.Region = 'Region Central'",
       "data_sources": ["Customer Metadata"],
       "external_systems": "None",
       "runtime_method": "pzExecuteLegacyComponent",
@@ -129,7 +129,7 @@
       "error_handling": "ComponentExecutionException"
     },
     {
-      "node_name": "NBA_AllIssues_E_Account",
+      "node_name": "Eligibility_Check_Primary",
       "node_type": "Eligibility Check",
       "condition_rule": "Customer.Eligible = true",
       "data_sources": ["Customer Metadata", "Decision Results"],
@@ -139,7 +139,7 @@
       "error_handling": "ComponentExecutionException"
     },
     {
-      "node_name": "NBA_AllGroups_A_Account",
+      "node_name": "Applicability_Check_Primary",
       "node_type": "Applicability Check",
       "condition_rule": "Customer.Group = 'Premium'",
       "data_sources": ["Customer Metadata", "Decision Results"],
@@ -159,7 +159,7 @@
       "error_handling": "ComponentExecutionException"
     },
     {
-      "node_name": "NBA_AllGroups_S_Account",
+      "node_name": "Suitability_Check_Primary",
       "node_type": "Suitability Extension",
       "condition_rule": "CreditScore > 60",
       "data_sources": ["Customer Metadata", "Decision Results"],
@@ -179,9 +179,9 @@
       "error_handling": "ComponentExecutionException"
     },
     {
-      "node_name": "AllGroupsExtension",
+      "node_name": "Eligibility_Extension",
       "node_type": "Eligibility Reconfirmation",
-      "condition_rule": "Region = 'Central'",
+      "condition_rule": "Region = 'Region Central'",
       "data_sources": ["Customer Metadata", "Decision Results"],
       "external_systems": "None",
       "runtime_method": "pzCreatePredictionMarkers",
