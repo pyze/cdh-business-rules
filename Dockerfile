@@ -6,13 +6,10 @@ FROM node:20-alpine AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Install pnpm
-RUN npm install -g pnpm
-
-# Copy package.json and pnpm-lock.yaml
-COPY package.json pnpm-lock.yaml* ./
-# Install dependencies using pnpm
-RUN pnpm install --frozen-lockfile
+# Copy package.json and package-lock.json
+COPY package.json package-lock.json ./
+# Install dependencies using npm
+RUN npm ci
 
 # 2. Build the Next.js application
 FROM node:20-alpine AS builder
@@ -27,10 +24,8 @@ ENV GEMINI_API_KEY=${GEMINI_API_KEY}
 # Disable Next.js telemetry during build
 ENV NEXT_TELEMETRY_DISABLED 1
 
-# Install pnpm (needed again in this stage if not globally available from base)
-RUN npm install -g pnpm
 # Run the Next.js build
-RUN pnpm build
+RUN npm run build
 
 # 3. Production image, copy only necessary artifacts
 FROM node:20-alpine AS runner
