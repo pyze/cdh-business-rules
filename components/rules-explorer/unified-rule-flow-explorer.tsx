@@ -371,12 +371,12 @@ export default function UnifiedRuleFlowExplorer({ onSimulationComplete }: Unifie
   // Check if a node matches the search term
   const nodeMatchesSearch = (node: NodeDetail) => {
     if (!searchTerm) return false
-    const searchLower = searchTerm.toLowerCase()
+    const searchLower = searchTerm.toLowerCase().replace(/_/g, ' ')
     return (
-      node.node_name.toLowerCase().includes(searchLower) ||
+      node.node_name.toLowerCase().replace(/_/g, ' ').includes(searchLower) ||
       node.condition_rule.toLowerCase().includes(searchLower) ||
-      node.node_type.toLowerCase().includes(searchLower) ||
-      node.data_sources.some(source => source.toLowerCase().includes(searchLower))
+      node.node_type.toLowerCase().replace(/_/g, ' ').includes(searchLower) ||
+      node.data_sources.some(source => source.toLowerCase().replace(/_/g, ' ').includes(searchLower))
     )
   }
 
