@@ -1,3 +1,10 @@
+import {
+  createGeminiClient,
+  formatMessagesForGemini,
+  createGeminiStream,
+  geminiStreamToSSE,
+} from "@/utils/gemini-handler"
+
 export async function POST(req: Request) {
   try {
     const { messages } = await req.json()
@@ -9,9 +16,9 @@ export async function POST(req: Request) {
       })
     }
 
-    // Make sure we have a valid OpenAI API key
-    if (!process.env.OPENAI_API_KEY) {
-      return new Response(JSON.stringify({ error: "OpenAI API key is missing" }), {
+    // Make sure we have a valid Gemini API key
+    if (!process.env.GEMINI_API_KEY) {
+      return new Response(JSON.stringify({ error: "Gemini API key is missing" }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
       })
@@ -27,27 +34,26 @@ export async function POST(req: Request) {
       })
     }
 
-    // Call OpenAI API directly using fetch
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-4o",
-        messages: formattedMessages,
-        stream: true,
-      }),
-    })
+    // Initialize Gemini client
+    const ai = createGeminiClient()
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({}))
-      throw new Error(error.error?.message || `OpenAI API error: ${response.status}`)
-    }
+    // Convert messages to Gemini format
+    const { systemMessage, history, lastMessage } = formatMessagesForGemini(formattedMessages)
 
-    // Return the streaming response directly
-    return new Response(response.body, {
+    // Create streaming response
+    const geminiStream = await createGeminiStream(
+      ai,
+      "gemini-2.5-flash",
+      systemMessage,
+      history,
+      lastMessage
+    )
+
+    // Convert to SSE stream
+    const readableStream = geminiStreamToSSE(geminiStream)
+
+    // Return the streaming response
+    return new Response(readableStream, {
       headers: {
         "Content-Type": "text/event-stream",
         "Cache-Control": "no-cache",

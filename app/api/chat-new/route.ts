@@ -1,3 +1,10 @@
+import {
+  createGeminiClient,
+  formatMessagesForGemini,
+  createGeminiStream,
+  geminiStreamToSSE,
+} from "@/utils/gemini-handler"
+
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30
 
@@ -12,123 +19,50 @@ export async function POST(req: Request) {
       })
     }
 
-    // Make sure we have a valid OpenAI API key
-    if (!process.env.OPENAI_API_KEY) {
-      return new Response(JSON.stringify({ error: "OpenAI API key is missing" }), {
+    // Make sure we have a valid Gemini API key
+    if (!process.env.GEMINI_API_KEY) {
+      return new Response(JSON.stringify({ error: "Gemini API key is missing" }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
       })
     }
 
-    // Format messages for the new API
-    const formattedInput = messages.map((msg) => ({
-      role: msg.role,
-      content: [
-        {
-          type: "input_text",
-          text: msg.content,
-        },
-      ],
-    }))
-
     // Add system message if not present
-    if (!formattedInput.some((msg) => msg.role === "system")) {
-      formattedInput.unshift({
+    const formattedMessages = [...messages]
+    if (!formattedMessages.some((msg) => msg.role === "system")) {
+      formattedMessages.unshift({
         role: "system",
-        content: [
-          {
-            type: "input_text",
-            text: "You are Veritas Discovery Co-Pilot, an AI assistant specialized in decision intelligence and rule transparency for CIBC. Provide clear, helpful responses about financial decision-making, regulatory compliance, and data-driven insights. Format your responses using markdown for better readability. Use bullet points, numbered lists, headings, and code blocks where appropriate. Break your response into clear paragraphs.",
-          },
-        ],
+        content:
+          "You are Veritas Discovery Co-Pilot, an AI assistant specialized in decision intelligence and rule transparency for CIBC. Provide clear, helpful responses about financial decision-making, regulatory compliance, and data-driven insights. Format your responses using markdown for better readability. Use bullet points, numbered lists, headings, and code blocks where appropriate. Break your response into clear paragraphs.",
       })
     }
 
-    try {
-      // Try the new responses API first
-      const response = await fetch("https://api.openai.com/v1/responses", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: "gpt-4.1",
-          input: formattedInput,
-          text: {
-            format: {
-              type: "text",
-            },
-          },
-          reasoning: {},
-          tools: [],
-          temperature: 0.7,
-          max_output_tokens: 2048,
-          top_p: 1,
-          stream: true,
-          store: true,
-        }),
-      })
+    // Initialize Gemini client
+    const ai = createGeminiClient()
 
-      if (response.ok) {
-        // Return the streaming response directly
-        return new Response(response.body, {
-          headers: {
-            "Content-Type": "text/event-stream",
-            "Cache-Control": "no-cache",
-            Connection: "keep-alive",
-          },
-        })
-      } else {
-        console.log("New API failed, falling back to chat completions API")
-        // If the new API fails, fall back to the chat completions API
-        throw new Error("New API failed")
-      }
-    } catch (error) {
-      console.log("Falling back to chat completions API:", error)
-      // Fall back to the chat completions API
-      const originalMessages = messages.map((msg) => ({
-        role: msg.role,
-        content: msg.content,
-      }))
+    // Convert messages to Gemini format
+    const { systemMessage, history, lastMessage } = formatMessagesForGemini(formattedMessages)
 
-      // Add system message if not present
-      if (!originalMessages.some((msg) => msg.role === "system")) {
-        originalMessages.unshift({
-          role: "system",
-          content:
-            "You are Veritas Discovery Co-Pilot, an AI assistant specialized in decision intelligence and rule transparency for CIBC. Provide clear, helpful responses about financial decision-making, regulatory compliance, and data-driven insights. Format your responses using markdown for better readability. Use bullet points, numbered lists, headings, and code blocks where appropriate. Break your response into clear paragraphs.",
-        })
-      }
+    // Create streaming response
+    const geminiStream = await createGeminiStream(
+      ai,
+      "gemini-2.5-flash",
+      systemMessage,
+      history,
+      lastMessage
+    )
 
-      // Call the chat completions API
-      const fallbackResponse = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: "gpt-4o",
-          messages: originalMessages,
-          stream: true,
-        }),
-      })
+    // Convert to web stream
+    const readableStream = geminiStreamToSSE(geminiStream)
 
-      if (!fallbackResponse.ok) {
-        const error = await fallbackResponse.json().catch(() => ({}))
-        throw new Error(error.error?.message || `OpenAI API error: ${fallbackResponse.status}`)
-      }
-
-      // Return the streaming response from the fallback API
-      return new Response(fallbackResponse.body, {
-        headers: {
-          "Content-Type": "text/event-stream",
-          "Cache-Control": "no-cache",
-          Connection: "keep-alive",
-        },
-      })
-    }
+    // Return the streaming response
+    return new Response(readableStream, {
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+      },
+    })
   } catch (error: any) {
     console.error("Error in chat API:", error)
     return new Response(JSON.stringify({ error: `Failed to process chat request: ${error.message}` }), {

@@ -1,12 +1,12 @@
-import OpenAI from "openai"
+import {
+  createGeminiClient,
+  formatMessagesForGemini,
+  createGeminiStream,
+  geminiStreamToSSE,
+} from "@/utils/gemini-handler"
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30
-
-// Create a server-side only OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
 
 export async function POST(req: Request) {
   try {
@@ -19,9 +19,9 @@ export async function POST(req: Request) {
       })
     }
 
-    // Make sure we have a valid OpenAI API key
-    if (!process.env.OPENAI_API_KEY) {
-      return new Response(JSON.stringify({ error: "OpenAI API key is missing" }), {
+    // Make sure we have a valid Gemini API key
+    if (!process.env.GEMINI_API_KEY) {
+      return new Response(JSON.stringify({ error: "Gemini API key is missing" }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
       })
@@ -37,31 +37,28 @@ export async function POST(req: Request) {
       })
     }
 
-    // Create a streaming response
-    const stream = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: formattedMessages,
-      stream: true,
-    })
+    // Initialize Gemini client
+    const ai = createGeminiClient()
 
-    // Convert the OpenAI stream to a Web stream
-    const textEncoder = new TextEncoder()
-    const readableStream = new ReadableStream({
-      async start(controller) {
-        for await (const chunk of stream) {
-          const content = chunk.choices[0]?.delta?.content || ""
-          if (content) {
-            controller.enqueue(textEncoder.encode(content))
-          }
-        }
-        controller.close()
-      },
-    })
+    // Convert messages to Gemini format
+    const { systemMessage, history, lastMessage } = formatMessagesForGemini(formattedMessages)
+
+    // Create streaming response
+    const geminiStream = await createGeminiStream(
+      ai,
+      "gemini-2.5-flash",
+      systemMessage,
+      history,
+      lastMessage
+    )
+
+    // Convert to web stream
+    const readableStream = geminiStreamToSSE(geminiStream)
 
     // Return the streaming response
     return new Response(readableStream, {
       headers: {
-        "Content-Type": "text/plain",
+        "Content-Type": "text/event-stream",
         "Cache-Control": "no-cache",
         Connection: "keep-alive",
       },

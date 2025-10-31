@@ -7,7 +7,7 @@ GCP_PROJECT_ID="pyze-automation-dev3"
 GCP_REGION="us-east1"
 SERVICE_NAME="cibc-business-rules-demo"
 IMAGE_NAME="cibc-business-rules-demo"
-OPENAI_API_KEY_VALUE="YOUR_OPENAI_API_KEY"
+GEMINI_API_KEY_VALUE="YOUR_GEMINI_API_KEY"
 
 # --- Derived Variables ---
 ARTIFACT_REGISTRY_REPO="${SERVICE_NAME}-repo" # Name for the Artifact Registry repository
@@ -79,7 +79,7 @@ build_image() {
   gcloud builds submit . --config=cloudbuild.yaml \
     --project="$GCP_PROJECT_ID" \
     --suppress-logs \
-    --substitutions="_IMAGE_TAG=$IMAGE_TAG,_OPENAI_API_KEY=$OPENAI_API_KEY_VALUE"
+    --substitutions="_IMAGE_TAG=$IMAGE_TAG,_GEMINI_API_KEY=$GEMINI_API_KEY_VALUE"
 
   if [ $? -ne 0 ]; then
     echo "Failed to build Docker image using cloudbuild.yaml. Check Cloud Build logs in Google Cloud Console."
@@ -91,14 +91,14 @@ build_image() {
 
 deploy_to_cloud_run() {
   echo "Deploying image to Cloud Run service: $SERVICE_NAME in region $GCP_REGION..."
-  # Set runtime environment variables, including OPENAI_API_KEY
+  # Set runtime environment variables, including GEMINI_API_KEY
   gcloud run deploy "$SERVICE_NAME" \
     --image="$IMAGE_TAG" \
     --platform=managed \
     --region="$GCP_REGION" \
     --allow-unauthenticated \
     --port=3000 \
-    --set-env-vars="NODE_ENV=production,OPENAI_API_KEY=$OPENAI_API_KEY_VALUE" \
+    --set-env-vars="NODE_ENV=production,GEMINI_API_KEY=$GEMINI_API_KEY_VALUE" \
     --project="$GCP_PROJECT_ID" \
     --quiet
 

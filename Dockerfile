@@ -20,9 +20,9 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Make OPENAI_API_KEY available as a build argument
-ARG OPENAI_API_KEY
-ENV OPENAI_API_KEY=${OPENAI_API_KEY}
+# Make GEMINI_API_KEY available as a build argument
+ARG GEMINI_API_KEY
+ENV GEMINI_API_KEY=${GEMINI_API_KEY}
 
 # Disable Next.js telemetry during build
 ENV NEXT_TELEMETRY_DISABLED 1

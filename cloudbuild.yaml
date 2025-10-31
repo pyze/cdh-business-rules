@@ -3,7 +3,7 @@ steps:
   args: [
     'build',
     '--tag', '${_IMAGE_TAG}',
-    '--build-arg', 'OPENAI_API_KEY=${_OPENAI_API_KEY}', # Pass ARG to Dockerfile
+    '--build-arg', 'GEMINI_API_KEY=${_GEMINI_API_KEY}', # Pass ARG to Dockerfile
     '.'
   ]
   # Optional: specify timeout for this step
@@ -17,4 +17,4 @@ images:
 # Default values can be provided here if needed, but we'll pass them from deploy_cloud_run.sh
 substitutions:
   _IMAGE_TAG: 'us-east1-docker.pkg.dev/pyze-automation-dev3/cibc-business-rules-demo-repo/cibc-business-rules-demo:latest' # Default, will be overridden
-  _OPENAI_API_KEY: 'dummy-key' # Default, will be overridden
+  _GEMINI_API_KEY: 'dummy-key' # Default, will be overridden

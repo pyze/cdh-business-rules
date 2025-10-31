@@ -1,5 +1,11 @@
 import { formatContextForPrompt } from "@/utils/strategy-context"
 import { formatCompleteContextForPrompt, type UIContext } from "@/utils/ui-context"
+import {
+  createGeminiClient,
+  formatMessagesForGemini,
+  createGeminiStream,
+  geminiStreamToSSE,
+} from "@/utils/gemini-handler"
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30
@@ -15,9 +21,9 @@ export async function POST(req: Request) {
       })
     }
 
-    // Make sure we have a valid OpenAI API key
-    if (!process.env.OPENAI_API_KEY) {
-      return new Response(JSON.stringify({ error: "OpenAI API key is missing" }), {
+    // Make sure we have a valid Gemini API key
+    if (!process.env.GEMINI_API_KEY) {
+      return new Response(JSON.stringify({ error: "Gemini API key is missing" }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
       })
@@ -29,7 +35,7 @@ export async function POST(req: Request) {
 
     // Format the context based on the user query and UI context
     let contextPrompt: string
-    
+
     if (uiContext) {
       // Use complete context including UI state
       contextPrompt = formatCompleteContextForPrompt(uiContext as UIContext, userQuery)
@@ -40,7 +46,7 @@ export async function POST(req: Request) {
 
     // Create a system message with the enhanced context
     let systemContent: string
-    
+
     if (isResearch) {
       systemContent = `You are Pyze Business Rules Intelligence Demo Research Assistant, an advanced AI specialized in data analysis, insights generation, and business intelligence for decision intelligence and rule transparency systems.
 
@@ -111,7 +117,7 @@ When users request visualizations:
 3. Explain what insights the chart reveals
 4. Suggest what actions could be taken based on the visualization`
     } else {
-      systemContent = `You are Pyze Business Rules Intelligence Demo, an AI assistant specialized in decision intelligence and rule transparency. 
+      systemContent = `You are Pyze Business Rules Intelligence Demo, an AI assistant specialized in decision intelligence and rule transparency.
 Provide clear, helpful responses about financial decision-making, regulatory compliance, and data-driven insights.
 Format your responses using markdown for better readability.
 
@@ -127,7 +133,7 @@ When answering questions:
 7. When discussing simulation results, be specific about which rules passed/failed and why
 8. Provide guidance on how to modify simulation inputs to achieve different outcomes`
     }
-    
+
     const systemMessage = {
       role: "system",
       content: systemContent,
@@ -143,27 +149,26 @@ When answering questions:
       formattedMessages.unshift(systemMessage)
     }
 
-    // Call OpenAI API directly using fetch
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-4-turbo-preview", // Or "gpt-4" for maximum sophistication
-        messages: formattedMessages,
-        stream: true,
-      }),
-    })
+    // Initialize Gemini client
+    const ai = createGeminiClient()
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({}))
-      throw new Error(error.error?.message || `OpenAI API error: ${response.status}`)
-    }
+    // Convert messages to Gemini format
+    const { systemMessage: geminiSystemMessage, history, lastMessage } = formatMessagesForGemini(formattedMessages)
 
-    // Return the streaming response directly
-    return new Response(response.body, {
+    // Create streaming response
+    const geminiStream = await createGeminiStream(
+      ai,
+      "gemini-2.5-flash",
+      geminiSystemMessage,
+      history,
+      lastMessage
+    )
+
+    // Convert to web stream
+    const readableStream = geminiStreamToSSE(geminiStream)
+
+    // Return the streaming response
+    return new Response(readableStream, {
       headers: {
         "Content-Type": "text/event-stream",
         "Cache-Control": "no-cache",

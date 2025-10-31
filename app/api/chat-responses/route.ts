@@ -1,3 +1,10 @@
+import {
+  createGeminiClient,
+  formatMessagesForGemini,
+  createGeminiStream,
+  geminiStreamToSSE,
+} from "@/utils/gemini-handler"
+
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30
 
@@ -12,9 +19,9 @@ export async function POST(req: Request) {
       })
     }
 
-    // Make sure we have a valid OpenAI API key
-    if (!process.env.OPENAI_API_KEY) {
-      return new Response(JSON.stringify({ error: "OpenAI API key is missing" }), {
+    // Make sure we have a valid Gemini API key
+    if (!process.env.GEMINI_API_KEY) {
+      return new Response(JSON.stringify({ error: "Gemini API key is missing" }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
       })
@@ -23,111 +30,44 @@ export async function POST(req: Request) {
     // Import the system prompt
     const { systemPrompt } = await import("@/utils/comprehensive-context")
 
-    // Format messages for the Responses API
-    const formattedInput = messages.map((msg) => ({
-      role: msg.role,
-      content: [
-        {
-          type: "input_text",
-          text: msg.content,
-        },
-      ],
-    }))
+    // Format messages with comprehensive context
+    const formattedMessages = [
+      {
+        role: "system",
+        content: systemPrompt,
+      },
+      ...messages.map((msg) => ({
+        role: msg.role,
+        content: msg.content,
+      })),
+    ]
 
-    // Add system message with comprehensive context
-    formattedInput.unshift({
-      role: "system",
-      content: [
-        {
-          type: "input_text",
-          text: systemPrompt,
-        },
-      ],
+    // Initialize Gemini client
+    const ai = createGeminiClient()
+
+    // Convert messages to Gemini format
+    const { systemMessage, history, lastMessage } = formatMessagesForGemini(formattedMessages)
+
+    // Create streaming response
+    const geminiStream = await createGeminiStream(
+      ai,
+      "gemini-2.5-flash",
+      systemMessage,
+      history,
+      lastMessage
+    )
+
+    // Convert to web stream
+    const readableStream = geminiStreamToSSE(geminiStream)
+
+    // Return the streaming response
+    return new Response(readableStream, {
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+      },
     })
-
-    try {
-      // Call the OpenAI Responses API
-      const response = await fetch("https://api.openai.com/v1/responses", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: "gpt-4.1",
-          input: formattedInput,
-          text: {
-            format: {
-              type: "text",
-            },
-          },
-          reasoning: {},
-          tools: [],
-          temperature: 1,
-          max_output_tokens: 2048,
-          top_p: 1,
-          stream: true,
-          store: true,
-        }),
-      })
-
-      if (response.ok) {
-        // Return the streaming response directly
-        return new Response(response.body, {
-          headers: {
-            "Content-Type": "text/event-stream",
-            "Cache-Control": "no-cache",
-            Connection: "keep-alive",
-          },
-        })
-      } else {
-        console.log("Responses API failed, falling back to chat completions API")
-        // If the Responses API fails, fall back to the chat completions API
-        throw new Error("Responses API failed")
-      }
-    } catch (error) {
-      console.log("Falling back to chat completions API:", error)
-
-      // Format messages for the Chat Completions API
-      const chatMessages = [
-        {
-          role: "system",
-          content: systemPrompt,
-        },
-        ...messages.map((msg) => ({
-          role: msg.role,
-          content: msg.content,
-        })),
-      ]
-
-      // Call the Chat Completions API
-      const fallbackResponse = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: "gpt-4o",
-          messages: chatMessages,
-          stream: true,
-        }),
-      })
-
-      if (!fallbackResponse.ok) {
-        const error = await fallbackResponse.json().catch(() => ({}))
-        throw new Error(error.error?.message || `OpenAI API error: ${fallbackResponse.status}`)
-      }
-
-      // Return the streaming response from the fallback API
-      return new Response(fallbackResponse.body, {
-        headers: {
-          "Content-Type": "text/event-stream",
-          "Cache-Control": "no-cache",
-          Connection: "keep-alive",
-        },
-      })
-    }
   } catch (error: any) {
     console.error("Error in chat API:", error)
     return new Response(JSON.stringify({ error: `Failed to process chat request: ${error.message}` }), {
