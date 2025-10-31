@@ -1,0 +1,20 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: [
+    'build',
+    '--tag', '${_IMAGE_TAG}',
+    '--build-arg', 'OPENAI_API_KEY=${_OPENAI_API_KEY}', # Pass ARG to Dockerfile
+    '.'
+  ]
+  # Optional: specify timeout for this step
+  # timeout: '1200s'
+
+# Define the images to be pushed to Artifact Registry after a successful build
+images:
+- '${_IMAGE_TAG}'
+
+# Define substitution variables that can be passed in via gcloud builds submit
+# Default values can be provided here if needed, but we'll pass them from deploy_cloud_run.sh
+substitutions:
+  _IMAGE_TAG: 'us-east1-docker.pkg.dev/pyze-automation-dev3/cibc-business-rules-demo-repo/cibc-business-rules-demo:latest' # Default, will be overridden
+  _OPENAI_API_KEY: 'dummy-key' # Default, will be overridden
