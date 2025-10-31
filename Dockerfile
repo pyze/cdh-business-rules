@@ -8,8 +8,8 @@ WORKDIR /app
 
 # Copy package.json and package-lock.json
 COPY package.json package-lock.json ./
-# Install dependencies using npm
-RUN npm ci
+# Install dependencies using npm with legacy peer deps to handle React 19 compatibility
+RUN npm ci --legacy-peer-deps
 
 # 2. Build the Next.js application
 FROM node:20-alpine AS builder
